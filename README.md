@@ -11,8 +11,9 @@ Tijdens het maken van het script zijn de volgende uitgangspunten gebruikt:
 - Er is geen foutcorrectie.
 
 ####    Gebruik:
+Voer het volgende commando uit in een terminal. Zorg ervoor dat het bestand met de zaken in dezelfde map staat als het script of geef het volledige pad op.
 
-```$python3 zaak_verander.py --zaken bestand_waarin_zaken_staan.txt```
+```python3 zaak_verander.py --zaken bestand_waarin_zaken_staan.txt```
 
 Het bestand waarin de zaken staan moet per regel een zaaknummer hebben en verder niets:
 
@@ -54,7 +55,7 @@ Het is met het script mogelijk om zaken in bulk te heropenen.
 
 ###   Updaten
 
-##LET OP: 
+##   LET OP: 
 > Alleen bij het eerste zaaknummer uit het bronbestand wordt het zaaktype opgehaald!
 > Deze wordt vervolgens toegepast op alle zaaknummers uit het bestand zonder verdere bevestiging te vragen!
 
