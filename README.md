@@ -1,5 +1,5 @@
 # zaak_verander
-=
+
 Versie 1 van het script kan worden gebruikt door beheerders van Zaaksysteem.nl
 
 Voor het gebruik van dit script is weinig technische kennis nodig, 
@@ -12,7 +12,7 @@ Tijdens het maken van het script zijn de volgende uitgangspunten gebruikt:
 
 ####    Gebruik:
 
-$python3 zaak_verander.py --zaken bestand_waarin_zaken_staan.txt
+```$python3 zaak_verander.py --zaken bestand_waarin_zaken_staan.txt```
 
 Het bestand waarin de zaken staan moet per regel een zaaknummer hebben en verder niets:
 
@@ -37,7 +37,7 @@ Als het sessie-bestand ouder is dan 1 uur zal een nieuwe sessie gevraagd worden.
 Ik heb niet getest hoe lang een sessie actief blijft en hoe een sessie verbroken kan raken. 
 Tijdens het uitvoeren van het script is het daarom belangrijk om de ingelogde sessie in de webbrowser open te houden.
 
-Er is GEEN rekening gehouden met de mogelijke gevolgen als een sessie verloopt.
+Er is **GEEN** rekening gehouden met de mogelijke gevolgen als een sessie verloopt.
 Op basis van de log zou dan achterhaald moeten worden welke aanpassingen mislukt zijn.
 
 In een eventuele volgende versie is hier nog ruimte voor verbetering. Maar ik zie daar momenteel geen toegevoegde waarde voor.
