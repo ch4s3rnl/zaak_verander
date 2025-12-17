@@ -1,5 +1,5 @@
 # zaak_verander
-====================
+=
 Versie 1 van het script kan worden gebruikt door beheerders van Zaaksysteem.nl
 
 Voor het gebruik van dit script is weinig technische kennis nodig, 
@@ -19,7 +19,9 @@ Het bestand waarin de zaken staan moet per regel een zaaknummer hebben en verder
 ####    Bijvoorbeeld:
 
 103356
+
 321547
+
 354987
 
 #   De functies
@@ -52,9 +54,9 @@ Het is met het script mogelijk om zaken in bulk te heropenen.
 
 ###   Updaten
 
-LET OP: 
-!! Alleen bij het eerste zaaknummer uit het bronbestand wordt het zaaktype opgehaald!
-!! Deze wordt vervolgens toegepast op alle zaaknummers uit het bestand zonder verdere bevestiging te vragen!
+##LET OP: 
+> Alleen bij het eerste zaaknummer uit het bronbestand wordt het zaaktype opgehaald!
+> Deze wordt vervolgens toegepast op alle zaaknummers uit het bestand zonder verdere bevestiging te vragen!
 
 Met de updaten functie wordt eerst het huidige zaaktype opgehaald. 
 Deze wordt daarna nogmaals toegepast waardoor de laatste versie van het zaaktype actief wordt.
