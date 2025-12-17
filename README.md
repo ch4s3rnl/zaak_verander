@@ -24,9 +24,7 @@ bijvoorbeeld:
 
 De functies die gebouwd zijn:
 
-######################
 # Sessie informatie  #
-######################
 
 Om het script bruikbaar te maken voor meerdere Zaaksysteem-gebruikers zijn de gegevens voor het maken van de verbinding niet in het script opgeslagen.
 Na het starten van het script zal gevraagd worden om een cURL te plakken. Deze is op te halen uit het development gedeelte van elke webbrowser.
@@ -41,24 +39,17 @@ Op basis van de log zou dan achterhaald moeten worden welke aanpassingen mislukt
 
 In een eventuele volgende versie is hier nog ruimte voor verbetering. Maar ik zie daar momenteel geen toegevoegde waarde voor.
 
-
-######################
 #   Fase aanpassen   #
-######################
 
 Deze functie is gemaakt voor correctie van zaken bij overgang naar een koppeling. 
 Fases naar voren zetten werkt niet. Het enige doel - en dat doet het script nu - is het terug kunnen zetten naar fase 2.
 Als om welke reden dan ook in bulk zaken naar een andere fase terug gezet moeten worden kan dat ook.
 
-######################
 #   Heropenen        #
-######################
 
 Het is met het script mogelijk om zaken in bulk te heropenen.
 
-######################
 #   Updaten          #
-######################
 
 LET OP: 
 !! Alleen bij het eerste zaaknummer uit het bronbestand wordt het zaaktype opgehaald!
@@ -68,9 +59,7 @@ Met de updaten functie wordt eerst het huidige zaaktype opgehaald.
 Deze wordt daarna nogmaals toegepast waardoor de laatste versie van het zaaktype actief wordt.
 Ter verificatie toont het script eerst het huidige zaaktype, op die manier is vast te stellen dat je de juiste hebt.
 
-######################
 #   Log-bestanden    #
-######################
 
 Na het aanpassen van de zaken zal een log-bestand worden gegenereerd waarin de uitgevoerde acties gelogd zijn.
 Het formaat van het log-bestand is Excel vriendelijk met een tab-gescheiden indeling.
