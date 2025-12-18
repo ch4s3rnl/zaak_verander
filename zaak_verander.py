@@ -73,6 +73,7 @@ if sessie:
         BASE_URL = sessie["base_url"]
         XSRF_TOKEN = sessie["xsrf_token"]
         SESSION_COOKIE = sessie["session_cookie"]
+        print("✓ Sessie geladen\n")
     else:
         sessie = None
 
@@ -87,8 +88,20 @@ if not sessie:
     curl = " ".join(lines)
 
     if curl:
-        BASE_URL = re.search(r"(https://[^/'\s]+)", curl).group(1)
+        if m := re.search(r"(https://[^/'\s]+)", curl):
+            BASE_URL = m.group(1)
+            print(f"✓ URL gedetecteerd: {BASE_URL}")
+        else:
+            print("✗ Kon URL niet vinden")
+            BASE_URL = input("BASE_URL: ").strip()
+        
         XSRF_TOKEN, SESSION_COOKIE = extract_from_curl(curl)
+        if XSRF_TOKEN and SESSION_COOKIE:
+            print("✓ Token en cookie geëxtraheerd")
+        else:
+            print("✗ Kon token/cookie niet vinden")
+            XSRF_TOKEN = input("X-XSRF-TOKEN: ").strip()
+            SESSION_COOKIE = input("SESSION_COOKIE: ").strip()
     else:
         BASE_URL = input("BASE_URL: ").strip()
         XSRF_TOKEN = input("X-XSRF-TOKEN: ").strip()
@@ -102,16 +115,16 @@ if not sessie:
 log_file = Path(f"zaak-update-{datetime.now():%Y%m%d-%H%M%S}.log")
 log_file.write_text("Datum\tZaak\tActie\tResultaat\n")
 
-def log(zaak, actie, resultaat):
+def log_actie(zaak, actie, resultaat):
     with open(log_file, "a", encoding="utf-8") as f:
-        f.write(f"{datetime.now()}\t{zaak}\t{actie}\t{resultaat}\n")
+        f.write(f"{datetime.now():%Y-%m-%d %H:%M:%S}\t{zaak}\t{actie}\t{resultaat}\n")
 
 # =========================
 # Actiekeuze
 # =========================
 actie = ""
 while actie not in ("f", "u", "h"):
-    actie = input("(f)ase aanpassen, (u)pdate zaaktype, (h)eropenen: ").lower()
+    actie = input("Wat wil je doen? (f)ase, (u)pdate zaaktype, (h)eropenen: ").lower()
 
 # =========================
 # Zaken inlezen
@@ -120,9 +133,9 @@ zaken = [z.strip() for z in Path(args.zaken).read_text().splitlines() if z.strip
 eerste_zaak = zaken[0]
 
 # =========================
-# Alleen bij FASE: huidige fase ophalen & tonen
+# Hulpfunctie voor zaakinfo ophalen
 # =========================
-def haal_fase_info(zaak):
+def haal_zaak_info(zaak):
     req = urllib.request.Request(
         f"{BASE_URL}/api/v0/case/{zaak}",
         headers={
@@ -132,32 +145,62 @@ def haal_fase_info(zaak):
         }
     )
     with urllib.request.urlopen(req) as r:
-        values = json.loads(r.read())["result"][0]["values"]
-        return {
-            "progress": int(values.get("case.progress_status", 0)),
-            "name": values.get("case.phase", "Onbekend")
-        }
+        return json.loads(r.read())["result"][0]["values"]
 
+# =========================
+# Actie-specifieke input
+# =========================
 if actie == "f":
-    info = haal_fase_info(eerste_zaak)
-    print("\nHUIDIGE FASE (voorbeeldzaak):")
-    print(f"  Fase: {info['name']}")
-    print(f"  Voortgang: {info['progress']}%")
-
+    # Huidige fase ophalen
+    values = haal_zaak_info(eerste_zaak)
+    huidige_fase = values.get("case.phase", "Onbekend")
+    voortgang = int(values.get("case.progress_status", 0))
+    
+    print(f"\nHUIDIGE FASE (zaak {eerste_zaak}):")
+    print(f"  Fase: {huidige_fase}")
+    print(f"  Voortgang: {voortgang}%")
+    
     while True:
         try:
-            doel_fase = int(input("\nNaar welke fase aanpassen?: "))
+            doel_fase = int(input("\nNaar welke fase zetten? (bijv. 2, 3, 4, ...): "))
             if doel_fase < 1:
-                raise ValueError
+                print("✗ Fase moet minimaal 1 zijn")
+                continue
             break
         except ValueError:
-            print("Voer een geldig positief getal in.")
-
+            print("✗ Ongeldig fase nummer")
+    
     fase_payload = doel_fase - 1
+    print(f"✓ Fase {doel_fase} geselecteerd (API waarde: {fase_payload})")
+
+elif actie == "u":
+    # Zaaktype ophalen en bevestigen
+    values = haal_zaak_info(eerste_zaak)
+    casetype_id = values.get("case.casetype.id")
+    casetype_name = values.get("case.casetype.name")
+    
+    if casetype_id and casetype_name:
+        print(f"\nGevonden zaaktype voor zaak {eerste_zaak}:")
+        print(f"  ID: {casetype_id}")
+        print(f"  Naam: {casetype_name}")
+        
+        bevestiging = input("\nIs dit het juiste zaaktype? (j/n): ").lower()
+        if bevestiging in ["j", "ja"]:
+            zaaktype_id = casetype_id
+            print(f"✓ Zaaktype ID {zaaktype_id} wordt gebruikt")
+        else:
+            zaaktype_id = input("Geef het gewenste zaaktype ID op: ").strip()
+    else:
+        print("✗ Kan zaaktype niet ophalen")
+        zaaktype_id = input("Geef het zaaktype ID op: ").strip()
+
+# Voor heropenen is geen extra input nodig
 
 # =========================
 # Verwerken
 # =========================
+print(f"\nStart verwerking van {len(zaken)} zaken...")
+
 for i, zaak in enumerate(zaken, 1):
     try:
         if actie == "f":
@@ -169,7 +212,18 @@ for i, zaak in enumerate(zaken, 1):
                 "milestone": fase_payload
             }
             url = f"{BASE_URL}/zaak/{zaak}/update/set_settings"
-            actie_omschrijving = f"Fase aangepast naar {doel_fase}"
+            actie_omschrijving = f"Fase aangepast naar fase {doel_fase}"
+
+        elif actie == "u":
+            payload = {
+                "selected_case_ids": int(zaak),
+                "no_redirect": 1,
+                "selection": "one_case",
+                "commit": 1,
+                "zaaktype_id": int(zaaktype_id)
+            }
+            url = f"{BASE_URL}/zaak/{zaak}/update/set_settings"
+            actie_omschrijving = f"Zaaktype geupdated naar {zaaktype_id}"
 
         elif actie == "h":
             payload = {"status": "open"}
@@ -186,14 +240,27 @@ for i, zaak in enumerate(zaken, 1):
                 "Cookie": f"zaaksysteem_session={SESSION_COOKIE}; XSRF-TOKEN={XSRF_TOKEN}"
             }
         )
-        urllib.request.urlopen(req)
-        log(zaak, actie_omschrijving, "OK")
+        
+        with urllib.request.urlopen(req) as response:
+            resp_text = response.read().decode()
+            try:
+                resp_json = json.loads(resp_text)
+                messages = resp_json.get("json", {}).get("messages", [])
+                if messages:
+                    result_msg = messages[0].get("message", "OK")
+                else:
+                    result_msg = "OK"
+            except:
+                result_msg = "OK"
+            
+            log_actie(zaak, actie_omschrijving, result_msg)
 
     except Exception as e:
-        log(zaak, actie_omschrijving, f"FOUT: {e}")
+        log_actie(zaak, actie_omschrijving, f"FOUT: {e}")
 
+    # Voortgangsbalk
     bar = int(i / len(zaken) * 40)
     print(f"[{'#'*bar}{'-'*(40-bar)}] {i}/{len(zaken)}", end="\r")
     time.sleep(0.05)
 
-print("\nKlaar. Logbestand:", log_file)
+print(f"\n\nKlaar! Logbestand: {log_file}")
