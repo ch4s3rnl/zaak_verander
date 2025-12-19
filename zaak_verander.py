@@ -124,7 +124,7 @@ def log_actie(zaak, actie, resultaat):
 # =========================
 actie = ""
 while actie not in ("f", "u", "h", "c"):
-    actie = input("Wat wil je doen? (f)ase, (u)pdate zaaktype, (h)eropenen, (c)ontroleer kenmerk: ").lower()
+    actie = input("Wat wil je doen? (c)ontroleer kenmerk, (f)ase, (u)pdate zaaktype, (h)eropenen : ").lower()
 
 # =========================
 # Zaken inlezen
@@ -292,11 +292,8 @@ for i, zaak in enumerate(zaken, 1):
                     log_actie(zaak, controle_beschrijving, "✗ Leeg/Null")
                 else:
                     log_actie(zaak, controle_beschrijving, f"✗ Waarde: {waarde}")
-            
-            # Voor controle doen we geen POST, alleen loggen
-            continue
         
-        if actie == "f":
+        elif actie == "f":
             payload = {
                 "selected_case_ids": int(zaak),
                 "no_redirect": 1,
@@ -306,6 +303,31 @@ for i, zaak in enumerate(zaken, 1):
             }
             url = f"{BASE_URL}/zaak/{zaak}/update/set_settings"
             actie_omschrijving = f"Fase aangepast naar fase {doel_fase}"
+            
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode(),
+                method="POST",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": XSRF_TOKEN,
+                    "Cookie": f"zaaksysteem_session={SESSION_COOKIE}; XSRF-TOKEN={XSRF_TOKEN}"
+                }
+            )
+            
+            with urllib.request.urlopen(req) as response:
+                resp_text = response.read().decode()
+                try:
+                    resp_json = json.loads(resp_text)
+                    messages = resp_json.get("json", {}).get("messages", [])
+                    if messages:
+                        result_msg = messages[0].get("message", "OK")
+                    else:
+                        result_msg = "OK"
+                except:
+                    result_msg = "OK"
+                
+                log_actie(zaak, actie_omschrijving, result_msg)
 
         elif actie == "u":
             payload = {
@@ -317,36 +339,61 @@ for i, zaak in enumerate(zaken, 1):
             }
             url = f"{BASE_URL}/zaak/{zaak}/update/set_settings"
             actie_omschrijving = f"Zaaktype geupdated naar {zaaktype_id}"
+            
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode(),
+                method="POST",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": XSRF_TOKEN,
+                    "Cookie": f"zaaksysteem_session={SESSION_COOKIE}; XSRF-TOKEN={XSRF_TOKEN}"
+                }
+            )
+            
+            with urllib.request.urlopen(req) as response:
+                resp_text = response.read().decode()
+                try:
+                    resp_json = json.loads(resp_text)
+                    messages = resp_json.get("json", {}).get("messages", [])
+                    if messages:
+                        result_msg = messages[0].get("message", "OK")
+                    else:
+                        result_msg = "OK"
+                except:
+                    result_msg = "OK"
+                
+                log_actie(zaak, actie_omschrijving, result_msg)
 
         elif actie == "h":
             payload = {"status": "open"}
             url = f"{BASE_URL}/api/v0/case/{zaak}/update"
             actie_omschrijving = "Zaak heropend"
-
-        req = urllib.request.Request(
-            url,
-            data=json.dumps(payload).encode(),
-            method="POST",
-            headers={
-                "Content-Type": "application/json",
-                "X-XSRF-TOKEN": XSRF_TOKEN,
-                "Cookie": f"zaaksysteem_session={SESSION_COOKIE}; XSRF-TOKEN={XSRF_TOKEN}"
-            }
-        )
-        
-        with urllib.request.urlopen(req) as response:
-            resp_text = response.read().decode()
-            try:
-                resp_json = json.loads(resp_text)
-                messages = resp_json.get("json", {}).get("messages", [])
-                if messages:
-                    result_msg = messages[0].get("message", "OK")
-                else:
-                    result_msg = "OK"
-            except:
-                result_msg = "OK"
             
-            log_actie(zaak, actie_omschrijving, result_msg)
+            req = urllib.request.Request(
+                url,
+                data=json.dumps(payload).encode(),
+                method="POST",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-XSRF-TOKEN": XSRF_TOKEN,
+                    "Cookie": f"zaaksysteem_session={SESSION_COOKIE}; XSRF-TOKEN={XSRF_TOKEN}"
+                }
+            )
+            
+            with urllib.request.urlopen(req) as response:
+                resp_text = response.read().decode()
+                try:
+                    resp_json = json.loads(resp_text)
+                    messages = resp_json.get("json", {}).get("messages", [])
+                    if messages:
+                        result_msg = messages[0].get("message", "OK")
+                    else:
+                        result_msg = "OK"
+                except:
+                    result_msg = "OK"
+                
+                log_actie(zaak, actie_omschrijving, result_msg)
 
     except Exception as e:
         if actie == "c":
@@ -354,7 +401,7 @@ for i, zaak in enumerate(zaken, 1):
         else:
             log_actie(zaak, actie_omschrijving, f"FOUT: {e}")
 
-    # Voortgangsbalk
+    # Voortgangsbalk (nu voor alle acties)
     bar = int(i / len(zaken) * 40)
     print(f"[{'#'*bar}{'-'*(40-bar)}] {i}/{len(zaken)}", end="\r")
     time.sleep(0.05)
