@@ -31,9 +31,13 @@ Voer het volgende commando uit in een terminal. Zorg ervoor dat het bestand met 
 Het bestand waarin de zaken staan moet per regel een zaaknummer hebben en verder niets:
 
 ####    Bijvoorbeeld:
-```103356
+
+```
+103356
 321547
-354987```
+354987 
+```
+
 #   De functies
 Hieronder alle functies die ik in het script heb gezet en eventuele aandachtspunten.
 
